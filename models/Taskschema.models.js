@@ -6,7 +6,7 @@ const taskSchema = new mongoose.Schema({
  team: { type: mongoose.Schema.Types.ObjectId, ref: 'Team',
 required: true }, // Refers to Team model
  owners: [
- { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true } // Refers to User model (owners)
+ { type: mongoose.Schema.Types.ObjectId, ref: 'users', required: true } // Refers to User model (owners)
  ],
  tags: [{ type: String }], // Array of tags
  timeToComplete: { type: Number, required: true }, // Number of days to complete the task
@@ -21,8 +21,8 @@ required: true }, // Refers to Team model
 
     });
 // Automatically update the `updatedAt` field whenever the document is updated
-taskSchema.pre('save', function (next) {
+taskSchema.pre('save', function () {
  this.updatedAt = Date.now();
- next();
+ 
 });
 module.exports = mongoose.model('Task', taskSchema);

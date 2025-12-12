@@ -1,0 +1,7 @@
+[
+  { "name": "Frontend" },
+  { "name": "Backend" },
+  { "name": "Urgent" },
+  { "name": "Bug" },
+  { "name": "Documentation" }
+]

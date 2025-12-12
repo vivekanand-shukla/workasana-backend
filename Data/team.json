@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Development Team",
+    "description": "Responsible for core code and features"
+  },
+  {
+    "name": "QA Team",
+    "description": "Testing and bug verification"
+  },
+  {
+    "name": "Design Team",
+    "description": "UI/UX and branding team"
+  }
+]

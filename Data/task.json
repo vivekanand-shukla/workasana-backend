@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Create Wireframe",
+    "project": "69283043c4006d5b09eca390",
+    "team": "69282f5cc4006d5b09eca387",
+    "owners": ["693bc4fb52c95d8e8a517a7f"],
+    "tags": ["Frontend", "Documentation"],
+    "timeToComplete": 5,
+    "status": "In Progress"
+   
+  },
+  {
+    "name": "Fix Login Bug",
+    "project": "69283035c4006d5b09eca38e",
+    "team": "69282f73c4006d5b09eca389",
+    "owners": ["693bc4fb52c95d8e8a517a7f"],
+    "tags": ["Backend", "Bug", "Urgent"],
+    "timeToComplete": 2,
+    "status": "To Do"
+    
+  },
+  {
+    "name": "Write Unit Tests",
+    "project": "69283035c4006d5b09eca38e",
+    "team": "69282f8ac4006d5b09eca38b",
+    "owners": ["693bc4fb52c95d8e8a517a7f"],
+    "tags": ["Backend", "Testing"],
+    "timeToComplete": 7,
+    "status": "To Do"
+   
+  }
+]
