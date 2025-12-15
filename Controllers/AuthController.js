@@ -53,6 +53,20 @@ const login = async( req,res)=> {
 
     }
 
+
+    // 
+
 }
 
-module.exports = {signUp , login };
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await UserModel.find().select('-password'); // exclude password
+        res.status(200).json({ success: true, users });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+
+
+module.exports = {signUp , login ,getAllUsers };
