@@ -57,12 +57,12 @@ async function addTask(newTask){
 
 // ============= TASK ROUTES =============
 // Create new task
-app.post("/tasks",ensureAuthenticated , async(req,res)=>{
+app.post("/tasks" , ensureAuthenticated , async(req,res)=>{
     try {
         const {name, project, status, timeToComplete, tags, owners, team} = req.body
         if(name && project && timeToComplete && owners && team){
 
-          console.log(req.body);
+        //   console.log(req.body);
       
 
                  let savedTask = await addTask({
@@ -77,14 +77,9 @@ app.post("/tasks",ensureAuthenticated , async(req,res)=>{
             if(savedTask ){
 
                 res.status(201).json({message:"successfully saved data", savedTask: savedTask})
-            }
-                
-          
-                
-              
-            
-           
-        } else {
+             }
+                } 
+                else {
             res.status(400).json({message:"some fields are missing or not wrong"})
         }
     } catch (error) {
@@ -93,7 +88,7 @@ app.post("/tasks",ensureAuthenticated , async(req,res)=>{
 })
 
 // Get all tasks with filtering
-app.get("/tasks",ensureAuthenticated, async(req,res)=>{
+app.get("/tasks",  ensureAuthenticated,  async(req,res)=>{
     try {
         const {team,owner,  tags, project, status} = req.query
         let filter = {}
@@ -125,7 +120,7 @@ app.post( "/tasks/:id", ensureAuthenticated,  async(req,res)=>{
         let updatedTask = await Task.findByIdAndUpdate(id, updateData, {new: true})
             .populate('project')
             .populate('team')
-            .populate('owners')
+            .populate('owners', '-password')
         
         if(updatedTask){
             res.status(200).json({message:"task updated successfully", task: updatedTask})
@@ -152,6 +147,17 @@ app.delete("/tasks/:id", ensureAuthenticated,  async(req,res)=>{
         res.status(500).json({error: error.message})
     }
 })
+
+
+// Ensure authenticated
+app.get(
+  "/ensureAuthenticated",
+  ensureAuthenticated,
+  async (req, res) => {
+    res.json({ message: "Authentication Successful" });
+  }
+);
+
 
 
 
@@ -193,11 +199,13 @@ app.get("/teams", ensureAuthenticated,  async(req,res)=>{
 // Create new project
 app.post("/projects", ensureAuthenticated,  async(req,res)=>{
     try {
-        const {name, description} = req.body
+        console.log("BODY RECEIVED:", req.body);
+        const {name, description ,status} = req.body
         if(name){
             let newProject = new Project({
                 name: name,
-                description: description
+                description: description,
+                status :status
             })
             let savedProject = await newProject.save()
             res.status(201).json({message:"project created successfully", project: savedProject})
