@@ -59,7 +59,7 @@ async function addTask(newTask){
 // Create new task
 app.post("/tasks" , ensureAuthenticated , async(req,res)=>{
     try {
-        const {name, project, status, timeToComplete, tags, owners, team} = req.body
+        const {name, project, status, timeToComplete, tags, owners, team , priority} = req.body
         if(name && project && timeToComplete && owners && team){
 
         //   console.log(req.body);
@@ -72,7 +72,9 @@ app.post("/tasks" , ensureAuthenticated , async(req,res)=>{
                 timeToComplete: timeToComplete,
                 tags: tags ? tags : [],
                 owners: owners,
-                team: team
+                team: team,
+                priority: priority
+
             })
             if(savedTask ){
 
@@ -90,7 +92,7 @@ app.post("/tasks" , ensureAuthenticated , async(req,res)=>{
 // Get all tasks with filtering
 app.get("/tasks",  ensureAuthenticated,  async(req,res)=>{
     try {
-        const {team,owner,  tags, project, status} = req.query
+        const {team,owner,  tags, project, status , priority} = req.query
         let filter = {}
         
         if(team) filter.team = team
@@ -98,6 +100,7 @@ app.get("/tasks",  ensureAuthenticated,  async(req,res)=>{
         if(tags) filter.tags = {$in: tags.split(',')}
         if(project) filter.project = project
         if(status) filter.status = status
+        if(priority) filter.priority = priority
         
         let tasks = await Task.find(filter)
             .populate('project')
@@ -109,6 +112,21 @@ app.get("/tasks",  ensureAuthenticated,  async(req,res)=>{
         res.status(500).json({error: error.message})
     }
 })
+//get one task
+app.get("/tasks/:id",  ensureAuthenticated,  async(req,res)=>{
+    try {
+       
+         const {id} = req.params
+        let task = await Task.findById(id)
+            .populate('project')
+            .populate('team')
+            .populate('owners', '-password')
+        
+        res.status(200).json({task: task})
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+})
 
 
 // Update a task
@@ -116,7 +134,9 @@ app.post( "/tasks/:id", ensureAuthenticated,  async(req,res)=>{
     try {
         const {id} = req.params
         const updateData = req.body
-        
+          console.log( "b id : ", id )
+          let ae =  await Task.findById(id)
+          console.log("b ae: ", ae )
         let updatedTask = await Task.findByIdAndUpdate(id, updateData, {new: true})
             .populate('project')
             .populate('team')
@@ -166,16 +186,32 @@ app.get(
 // Create new team
 app.post("/teams", ensureAuthenticated,  async(req,res)=>{
     try {
-        const {name, description} = req.body
+        const {name, description ,members} = req.body
         if(name){
             let newTeam = new Team({
                 name: name,
-                description: description
+                description: description,
+                members: members
             })
-            let savedTeam = await newTeam.save()
+            let savedTeam = await newTeam.save();
             res.status(201).json({message:"team created successfully", team: savedTeam})
         } else {
             res.status(400).json({message:"name field is required"})
+        }
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+})
+// Upadte team member
+app.put("/teams/:id", ensureAuthenticated,  async(req,res)=>{
+    try {
+        const updateData = req.body
+        const {id} = req.params
+        if( id &&  updateData){ 
+            let savedTeam = await Team.findByIdAndUpdate(id, updateData, {new: true})
+            res.status(201).json({message:"team updated  successfully", team: savedTeam})
+        } else {
+            res.status(404).json({message:"Id not found or update data not present"})
         }
     } catch (error) {
         res.status(500).json({error: error.message})
@@ -187,6 +223,16 @@ app.get("/teams", ensureAuthenticated,  async(req,res)=>{
     try {
         let teams = await Team.find()
         res.status(200).json({teams: teams})
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+})
+// Get one teams
+app.get("/teams/:id", ensureAuthenticated,  async(req,res)=>{
+     const {id} = req.params
+    try {
+        let team = await Team.findById(id)
+        res.status(200).json({team: team})
     } catch (error) {
         res.status(500).json({error: error.message})
     }

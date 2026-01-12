@@ -16,6 +16,11 @@ required: true }, // Refers to Team model
 // Enum for task status
  default: 'To Do'
  }, // Task status
+ priority :  {  type: String , 
+    enum : ["Low" , "Medium" , "High"],
+    default:"Low"
+
+ } ,
  createdAt: { type: Date, default: Date.now },
  updatedAt: { type: Date, default:Date.now }
 
