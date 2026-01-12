@@ -308,50 +308,96 @@ app.get("/tags", ensureAuthenticated,  async(req,res)=>{
     }
 })
 
-
-
-
-
-// // ============= USER ROUTES =============
-
-// // Create new user
-// app.post("/users", ensureAuthenticated, async(req,res)=>{
-//     try {
-//         const {name, email} = req.body
-//         if(name && email){
-//             let newUser = new User({
-//                 name: name,
-//                 email: email
-//             })
-//             let savedUser = await newUser.save()
-//             res.status(201).json({message:"user created successfully", user: savedUser})
-//         } else {
-//             res.status(400).json({message:"name and email fields are required"})
-//         }
-//     } catch (error) {
-//         res.status(500).json({error: error.message})
-//     }
-// })
-
-// // Get all users
-// app.get("/users", ensureAuthenticated,  async(req,res)=>{
-//     try {
-//         let users = await User.find()
-//         res.status(200).json({users: users})
-//     } catch (error) {
-//         res.status(500).json({error: error.message})
-//     }
-// })
-
-
 // ============= REPORT ROUTES =============
 
 // Get tasks completed last week
-
+app.get("/report/last-week", async(req,res)=>{
+    try {
+        let oneWeekAgo = new Date()
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7)
+        
+        let completedTasks = await Task.find({
+            status: 'Completed',
+            updatedAt: {$gte: oneWeekAgo}
+        })
+        .populate('project')
+        .populate('team')
+        .populate('owners' , '-password')
+        
+        res.status(200).json({
+            message:"tasks completed last week",
+            count: completedTasks.length,
+            tasks: completedTasks
+        })
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+})
 
 // Get total pending work
+app.get("/report/pending", async(req,res)=>{
+    try {
+        let pendingTasks = await Task.find({
+            status: {$ne: 'Completed'}
+        })
+        
+        let totalDays = pendingTasks.reduce((sum, task) => {
+            return sum + task.timeToComplete
+        }, 0)
+        
+        res.status(200).json({
+            message:"total pending work",
+            totalDays: totalDays,
+            taskCount: pendingTasks.length
+        })
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+})
 
 // Get closed tasks statistics
+app.get("/report/closed-tasks", async(req,res)=>{
+    try {
+        let completedTasks = await Task.find({status: 'Completed'})
+            .populate('team')
+            .populate('project')
+            .populate('owners', '-password')
+        
+        // Group by team
+        let byTeam = {}
+        completedTasks.forEach(task => {
+            let teamName = task.team ? task.team.name : 'No Team'
+            byTeam[teamName] = (byTeam[teamName] || 0) + 1
+        })
+        
+        // Group by project
+        let byProject = {}
+        completedTasks.forEach(task => {
+            let projectName = task.project ? task.project.name : 'No Project'
+            byProject[projectName] = (byProject[projectName] || 0) + 1
+        })
+        
+        // Group by owner
+        let byOwner = {}
+        completedTasks.forEach(task => {
+            task.owners.forEach(owner => {
+                let ownerName = owner.name
+                byOwner[ownerName] = (byOwner[ownerName] || 0) + 1
+            })
+        })
+        
+        res.status(200).json({
+            message:"closed tasks statistics",
+            totalClosed: completedTasks.length,
+            byTeam: byTeam,
+            byProject: byProject,
+            byOwner: byOwner
+        })
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+})
+
 
 
 app.listen(PORT,()=>{
