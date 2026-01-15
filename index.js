@@ -208,7 +208,7 @@ app.put("/teams/:id", ensureAuthenticated,  async(req,res)=>{
         const updateData = req.body
         const {id} = req.params
         if( id &&  updateData){ 
-            let savedTeam = await Team.findByIdAndUpdate(id, updateData, {new: true})
+            let savedTeam = await Team.findByIdAndUpdate(id, updateData, {new: true}).populate("members", "name email");
             res.status(201).json({message:"team updated  successfully", team: savedTeam})
         } else {
             res.status(404).json({message:"Id not found or update data not present"})
@@ -217,11 +217,50 @@ app.put("/teams/:id", ensureAuthenticated,  async(req,res)=>{
         res.status(500).json({error: error.message})
     }
 })
+// delete team
+app.delete("/teams/:id", ensureAuthenticated,  async(req,res)=>{
+    try {
+        
+        const {id} = req.params
+        if( id ){ 
+            let savedTeam = await Team.findByIdAndDelete(id)
+            res.status(201).json({message:"team deleted  successfully", team: savedTeam})
+        } else {
+            res.status(404).json({message:"Id not found "})
+        }
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+})
+
+// dekete a member 
+
+// Remove a member from team
+app.delete("/teams/:teamId/members/:userId", ensureAuthenticated, async (req, res) => {
+  try {
+    const { teamId, userId } = req.params;
+
+    const team = await Team.findByIdAndUpdate(
+      teamId,
+      { $pull: { members: userId } },
+      { new: true }
+    ).populate("members", "name email");
+
+    if (!team) {
+      return res.status(404).json({ message: "Team not found" });
+    }
+
+    res.status(200).json({ message: "Member removed", team });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Get all teams
 app.get("/teams", ensureAuthenticated,  async(req,res)=>{
     try {
-        let teams = await Team.find()
+        let teams = await Team.find().populate('members', '-password')
         res.status(200).json({teams: teams})
     } catch (error) {
         res.status(500).json({error: error.message})
@@ -231,7 +270,7 @@ app.get("/teams", ensureAuthenticated,  async(req,res)=>{
 app.get("/teams/:id", ensureAuthenticated,  async(req,res)=>{
      const {id} = req.params
     try {
-        let team = await Team.findById(id)
+        let team = await Team.findById(id).populate('members', '-password')
         res.status(200).json({team: team})
     } catch (error) {
         res.status(500).json({error: error.message})
@@ -274,7 +313,21 @@ app.get("/projects", ensureAuthenticated , async(req,res)=>{
 })
 
 
-
+// Delete a project
+app.delete("/projects/:id", ensureAuthenticated, async(req,res)=>{
+    try {
+        const {id} = req.params
+        let deletedProject = await Project.findByIdAndDelete(id)
+        
+        if(deletedProject){
+            res.status(200).json({message:"project deleted successfully", project: deletedProject})
+        } else {
+            res.status(404).json({message:"project not found"})
+        }
+    } catch (error) {
+        res.status(500).json({error: error.message})
+    }
+})
 
 
 

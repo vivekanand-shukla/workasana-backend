@@ -69,4 +69,41 @@ const getAllUsers = async (req, res) => {
 
 
 
-module.exports = {signUp , login ,getAllUsers };
+const getMe = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.user._id).select("-password");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+    res.status(200).json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+
+const deleteAccount = async (req, res) => {
+    try {
+        const userId = req.user._id; // coming from JWT
+
+        await UserModel.findByIdAndDelete(userId);
+
+        res.status(200).json({
+            success: true,
+            message: "Account deleted successfully"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
+    }
+};
+
+
+
+
+
+
+module.exports = {signUp , login ,getAllUsers  , getMe  , deleteAccount };
