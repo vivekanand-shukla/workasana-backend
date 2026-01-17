@@ -7,7 +7,7 @@ const Project = require("./models/projectschema.models")
 const Tag = require("./models/tagschema.models")
 const Task = require("./models/Taskschema.models")
 const Team = require("./models/teamschema.models")
-// const User = require("./models/userschema.models")
+
 const AuthRouter = require('./Routes/AuthRouter')
 const  ensureAuthenticated = require("./Middlewares/Auth")
 const PORT = process.env.PORT || 3000
@@ -50,7 +50,7 @@ async function addTask(newTask){
         let save = await taskValue.save()
         return save
     } catch (error) {
-         console.log(error)
+      
          return error
     }
 }
@@ -62,7 +62,7 @@ app.post("/tasks" , ensureAuthenticated , async(req,res)=>{
         const {name, project, status, timeToComplete, tags, owners, team , priority} = req.body
         if(name && project && timeToComplete && owners && team){
 
-        //   console.log(req.body);
+        
       
 
                  let savedTask = await addTask({
@@ -134,9 +134,9 @@ app.post( "/tasks/:id", ensureAuthenticated,  async(req,res)=>{
     try {
         const {id} = req.params
         const updateData = req.body
-          console.log( "b id : ", id )
+         
           let ae =  await Task.findById(id)
-          console.log("b ae: ", ae )
+      
         let updatedTask = await Task.findByIdAndUpdate(id, updateData, {new: true})
             .populate('project')
             .populate('team')
@@ -284,7 +284,7 @@ app.get("/teams/:id", ensureAuthenticated,  async(req,res)=>{
 // Create new project
 app.post("/projects", ensureAuthenticated,  async(req,res)=>{
     try {
-        console.log("BODY RECEIVED:", req.body);
+      
         const {name, description ,status} = req.body
         if(name){
             let newProject = new Project({

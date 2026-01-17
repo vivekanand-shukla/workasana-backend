@@ -20,7 +20,7 @@ const signUp = async( req,res)=> {
     }
 
 }
-// console.log("JWT_SECRET ==>", process.env.JWT_SECRET)
+
 
 
 const login = async( req,res)=> {
@@ -54,13 +54,13 @@ const login = async( req,res)=> {
     }
 
 
-    // 
+    
 
 }
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await UserModel.find().select('-password'); // exclude password
+        const users = await UserModel.find().select('-password'); 
         res.status(200).json({ success: true, users });
     } catch (error) {
         res.status(500).json({ success: false, message: "Internal server error" });
@@ -84,7 +84,7 @@ const getMe = async (req, res) => {
 
 const deleteAccount = async (req, res) => {
     try {
-        const userId = req.user._id; // coming from JWT
+        const userId = req.user._id;
 
         await UserModel.findByIdAndDelete(userId);
 
