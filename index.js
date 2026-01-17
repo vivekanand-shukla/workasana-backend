@@ -23,7 +23,7 @@ const cors = require("cors");
 const corsOptions = {
   origin: [
     "http://localhost:5173",                      // React local
-    "https://workasana-frontend-ten.vercel.app/login", // Deployed frontend
+    "https://workasana-frontend-ten.vercel.app", // Deployed frontend
     "http://localhost:3000"                        // Optional (Next.js etc)
   ],
   credentials: true,
