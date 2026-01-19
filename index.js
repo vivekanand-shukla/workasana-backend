@@ -7,6 +7,7 @@ const Project = require("./models/projectschema.models")
 const Tag = require("./models/tagschema.models")
 const Task = require("./models/Taskschema.models")
 const Team = require("./models/teamschema.models")
+const mongoose = require('mongoose');  
 
 const AuthRouter = require('./Routes/AuthRouter')
 const  ensureAuthenticated = require("./Middlewares/Auth")
@@ -188,11 +189,13 @@ app.get(
 app.post("/teams", ensureAuthenticated,  async(req,res)=>{
     try {
         const {name, description ,members} = req.body
+       
         if(name){
             let newTeam = new Team({
                 name: name,
                 description: description,
                 members: members
+
             })
             let savedTeam = await newTeam.save();
             res.status(201).json({message:"team created successfully", team: savedTeam})
