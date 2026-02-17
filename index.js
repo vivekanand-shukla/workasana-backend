@@ -576,7 +576,7 @@ const jwtToken = jwt.sign(
 );
 
 return res.redirect(
-  `${process.env.FRONTEND_URL}/oauth-success?token=${jwtToken}`
+  `${FRONTEND_URL}/oauth-success?token=${jwtToken}`
 );
 
 
@@ -682,7 +682,7 @@ const jwtToken = jwt.sign(
 
 // Redirect with JWT
 return res.redirect(
-  `${process.env.FRONTEND_URL}/oauth-success?token=${jwtToken}`
+  `${FRONTEND_URL}/oauth-success?token=${jwtToken}`
 );
 
 // return res.redirect(`${FRONTEND_URL}/v2/profile/google`)
