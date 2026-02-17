@@ -14,7 +14,7 @@ const User = require("./models/user.models");
 const AuthRouter = require('./Routes/AuthRouter')
 const  ensureAuthenticated = require("./Middlewares/Auth")
 const PORT = process.env.PORT || 3000
-
+const jwt = require("jsonwebtoken");
 connectDb()
 
 app.use(bodyParser.json())
@@ -469,22 +469,22 @@ next()
 }
 
 
-app.get("/user/profile/github", verifyAccessToken, async (req,res)=>{
-    try {
+// app.get("/user/profile/github", verifyAccessToken, async (req,res)=>{
+//     try {
 
-        const  { access_token } = req.cookies
-        const githubUserDatatResponse = await axios.get("https://api.github.com/user" , {
-            headers:{
-                Authorization:`Bearer ${access_token}`
-            }
-        })
+//         const  { access_token } = req.cookies
+//         const githubUserDatatResponse = await axios.get("https://api.github.com/user" , {
+//             headers:{
+//                 Authorization:`Bearer ${access_token}`
+//             }
+//         })
         
-        res.json({user : githubUserDatatResponse.data })
-    } catch (error) {
-        res.status(500).json({error:"Could not fetch user Github profile"})
+//         res.json({user : githubUserDatatResponse.data })
+//     } catch (error) {
+//         res.status(500).json({error:"Could not fetch user Github profile"})
         
-    }
-})
+//     }
+// })
 
 app.get("/auth/github" , (req,res)=>{
     const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=user,repo,security_events`
@@ -532,13 +532,31 @@ const accessToken = tokenResponse.data.access_token
 
     const githubUser = userResponse.data
 
+
+    //
+    let email = githubUser.email;
+
+if (!email) {
+  const emailRes = await axios.get(
+    "https://api.github.com/user/emails",
+    {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    }
+  );
+
+  const primaryEmail = emailRes.data.find(e => e.primary);
+  email = primaryEmail?.email;
+}
+
+    //
+
     // Step 3: Save to DB
-    let user = await User.findOne({ email: githubUser.email })
+    let user = await User.findOne({ email: email })
 
     if (!user) {
       user = await User.create({
         name: githubUser.name || githubUser.login,
-        email: githubUser.email || githubUser.name,
+        email: githubUser.email || email,
         picture: githubUser.avatar_url,
         provider: "github"
       })
@@ -547,9 +565,20 @@ const accessToken = tokenResponse.data.access_token
 
 
 
-res.cookie("access_token",accessToken )
+// res.cookie("access_token",accessToken )
 // setSecureCookie(res ,accessToken)
-return res.redirect(`${FRONTEND_URL}/v2/profile/github`)
+// return res.redirect(`${FRONTEND_URL}/v2/profile/github`)
+
+const jwtToken = jwt.sign(
+  { email: user.email, _id: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "24h" }
+);
+
+return res.redirect(
+  `${process.env.FRONTEND_URL}/oauth-success?token=${jwtToken}`
+);
+
 
     } catch (error) {
         res.status(500).json(error)
@@ -562,22 +591,22 @@ return res.redirect(`${FRONTEND_URL}/v2/profile/github`)
 
 
 
-app.get("/user/profile/google", verifyAccessToken, async (req,res)=>{
-    try {
+// app.get("/user/profile/google", verifyAccessToken, async (req,res)=>{
+//     try {
 
-        const  {access_token } = req.cookies
-        const googleUserDatatResponse = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo",{
-            headers:{
-                Authorization:`Bearer ${access_token}`
-            }
-        })
+//         const  {access_token } = req.cookies
+//         const googleUserDatatResponse = await axios.get("https://www.googleapis.com/oauth2/v2/userinfo",{
+//             headers:{
+//                 Authorization:`Bearer ${access_token}`
+//             }
+//         })
         
-        res.json({user : googleUserDatatResponse.data })
-    } catch (error) {
-        res.status(500).json({error:"Could not fetch user Google profile"})
+//         res.json({user : googleUserDatatResponse.data })
+//     } catch (error) {
+//         res.status(500).json({error:"Could not fetch user Google profile"})
         
-    }
-})
+//     }
+// })
 
 app.get("/auth/google" , (req,res)=>{
     const googleAuthUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=http://localhost:${process.env.PORT}/auth/google/callback&response_type=code&scope=profile email`
@@ -603,12 +632,13 @@ app.get("/auth/google/callback", async(req,res)=>{
          client_secret: process.env.GOOGLE_CLIENT_SECRET,
          code,
          grant_type: 'authorization_code',
-         redirect_uri:`http://localhost:${process.env.PORT}/auth/google/callback`
-       },{
-        headers:{
-             "Content-Type": "application/x-www-form-urlencoded",
-        }
+         redirect_uri:`https://workasana-backend-gold.vercel.app/auth/google/callback` //here the issue
        }
+    //    ,{
+    //     headers:{
+    //          "Content-Type": "application/x-www-form-urlencoded",
+    //     }
+    //    }
     
     )
 
@@ -638,8 +668,24 @@ app.get("/auth/google/callback", async(req,res)=>{
       provider: "google"
     })
 }
-res.cookie("access_token", accessToken)
-return res.redirect(`${FRONTEND_URL}/v2/profile/google`)
+// res.cookie("access_token", accessToken)
+
+
+
+
+
+const jwtToken = jwt.sign(
+  { email: user.email, _id: user._id },
+  process.env.JWT_SECRET,
+  { expiresIn: "24h" }
+);
+
+// Redirect with JWT
+return res.redirect(
+  `${process.env.FRONTEND_URL}/oauth-success?token=${jwtToken}`
+);
+
+// return res.redirect(`${FRONTEND_URL}/v2/profile/google`)
 
     } catch (error) {
 
