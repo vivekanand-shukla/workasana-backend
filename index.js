@@ -558,7 +558,8 @@ if (!email) {
         name: githubUser.name || githubUser.login,
         email: githubUser.email || email,
         picture: githubUser.avatar_url,
-        provider: "github"
+        provider: "github",
+        isVerified:true,
       })
     }
 //
@@ -665,6 +666,7 @@ app.get("/auth/google/callback", async(req,res)=>{
             name: googleUser.name,
             email: googleUser.email ,
             picture: googleUser.picture,
+            isVerified:true,
       provider: "google"
     })
 }
