@@ -21,7 +21,7 @@ const signUp = async( req,res)=> {
         const {name ,email ,password} =   req.body 
         const user = await UserModel.findOne({email})
         if(user ){
-            return res.status(409).json({message :  "user is already exist you can login " , success : false});
+            return res.status(409).json({message :  "user is already exist you can not signup " , success : false});
 
         }
         const otp = generateOTP();
